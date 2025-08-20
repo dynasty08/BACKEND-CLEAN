@@ -1,0 +1,213 @@
+service: my-secure-service
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-southeast-1  # ✅ Already correct
+  logRetentionInDays: 14
+  environment:
+    STAGE: ${opt:stage, 'dev'}
+    DB_SECRET_ARN: ${.env:DB_SECRET_ARN}  # ✅ Already correct - reads from .env file
+    USERS_TABLE: DynamoDB-CLEAN
+  vpc:
+    securityGroupIds:
+      - sg-0d686b29fc66e2533  # ✅ Already correct - your security group
+    subnetIds:
+      - subnet-0fb5f70cfd13f2daf  # ✅ Already correct - your subnets
+      - subnet-05ebe159269965ab6
+    
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ec2:CreateNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DeleteNetworkInterface
+          Resource: "*"  # ✅ Already correct - VPC permissions
+        - Effect: Allow
+          Action:
+            - secretsmanager:GetSecretValue  # ✅ Already correct - Secrets Manager permission
+          Resource: "arn:aws:secretsmanager:ap-southeast-1:*:secret:*"  # ✅ Already correct
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:ListTables
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: 
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/DynamoDB-CLEAN"
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/DynamoDB-CLEAN/index/*"
+
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/ProcessedFiles-CLEAN"
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/ProcessedFiles-CLEAN/index/*"
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/*"
+        - Effect: Allow
+          Action:
+            - s3:ListAllMyBuckets
+            - s3:GetBucketLocation
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - rds:DescribeDBInstances
+            - rds:DescribeDBClusters
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogGroups
+            - logs:DescribeLogStreams
+          Resource: "arn:aws:logs:ap-southeast-1:*:*"
+  
+
+functions:
+  # User Authentication
+  loginFunction:
+    handler: lambda/login.handler
+    vpc: ~
+    events:
+      - http:
+          path: login
+          method: post
+          cors: true
+
+  registerFunction:
+    handler: lambda/register-final.handler
+    events:
+      - http:
+          path: register
+          method: post
+          cors: true
+
+  logoutFunction:
+    handler: lambda/logout.handler
+    events:
+      - http:
+          path: logout
+          method: post
+          cors: true
+
+  loginHybridFunction:
+    handler: lambda/login-hybrid.handler
+    vpc: ~
+    events:
+      - http:
+          path: login/hybrid
+          method: post
+          cors: true
+
+  logoutHybridFunction:
+    handler: lambda/logout-hybrid.handler
+    events:
+      - http:
+          path: logout/hybrid
+          method: post
+          cors: true
+
+  # Dashboard APIs
+  getDashboardDataFunction:
+    handler: lambda/get-dashboard-data.handler
+    events:
+      - http:
+          path: dashboard
+          method: get
+          cors: true
+
+  getDashboardHybridFunction:
+    handler: lambda/get-dashboard-hybrid.handler
+    events:
+      - http:
+          path: dashboard/hybrid
+          method: get
+          cors: true
+
+  getDashboardUsersFunction:
+    handler: lambda/get-dashboard-users.handler
+    vpc: ~
+    events:
+      - http:
+          path: dashboard/users
+          method: get
+          cors: true
+
+  getUsersFunction:
+    handler: lambda/get-users.handler
+    events:
+      - http:
+          path: users
+          method: get
+          cors: true
+
+  # Analytics API
+  getAnalyticsDataFunction:
+    handler: lambda/get-analytics-data.handler
+    events:
+      - http:
+          path: analytics
+          method: get
+          cors: true
+
+  # Database Setup
+  setupDatabaseFunction:
+    handler: lambda/setup-database.handler
+    events:
+      - http:
+          path: setup-database
+          method: get
+          cors: true
+
+  setupPostgreSQLFunction:
+    handler: lambda/setup-postgresql.handler
+    events:
+      - http:
+          path: setup-postgresql
+          method: get
+          cors: true
+
+  syncDataFunction:
+    handler: lambda/sync-data.handler
+    events:
+      - http:
+          path: sync-data
+          method: get
+          cors: true
+
+  resetDailySessionsFunction:
+    handler: lambda/reset-daily-sessions.handler
+    events:
+      - schedule: cron(0 0 * * ? *)  # Daily at midnight UTC
+      - http:
+          path: reset-sessions
+          method: get
+          cors: true
+
+plugins:
+  - serverless-offline
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: DynamoDB-CLEAN
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST

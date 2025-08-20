@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Serverless directories
+.serverless/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# AWS
+.aws/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

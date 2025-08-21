@@ -10,7 +10,7 @@ provider:
   environment:
     STAGE: ${opt:stage, 'dev'}
     DB_SECRET_ARN: ${.env:DB_SECRET_ARN}  # ✅ Already correct - reads from .env file
-    USERS_TABLE: DynamoDB-CLEAN-V2
+    USERS_TABLE: DynamoDB-CLEAN
   vpc:
     securityGroupIds:
       - sg-0d686b29fc66e2533  # ✅ Already correct - your security group
@@ -41,8 +41,8 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource: 
-            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/DynamoDB-CLEAN-V2"
-            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/DynamoDB-CLEAN-V2/index/*"
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/DynamoDB-CLEAN"
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/DynamoDB-CLEAN/index/*"
 
             - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/ProcessedFiles-CLEAN"
             - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/ProcessedFiles-CLEAN/index/*"
@@ -190,25 +190,4 @@ functions:
 
 
 
-resources:
-  Resources:
-    UsersTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: DynamoDB-CLEAN-V2
-        AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: email
-            AttributeType: S
-        KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: EmailIndex
-            KeySchema:
-              - AttributeName: email
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-        BillingMode: PAY_PER_REQUEST
+# Using existing DynamoDB table DynamoDB-CLEAN

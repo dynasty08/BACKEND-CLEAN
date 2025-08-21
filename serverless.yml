@@ -1,4 +1,4 @@
-service: serverless-backend-v3
+service: clean-backend-final
 
 plugins: []
 
@@ -182,7 +182,6 @@ functions:
   resetDailySessionsFunction:
     handler: lambda/reset-daily-sessions.handler
     events:
-      - schedule: cron(0 0 * * ? *)  # Daily at midnight UTC
       - http:
           path: reset-sessions
           method: get

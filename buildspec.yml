@@ -3,7 +3,6 @@ version: 0.2
 env:
   variables:
     DB_SECRET_ARN: "arn:aws:secretsmanager:ap-southeast-1:194416698840:secret:rds!db-498e9ad0-b353-492d-84bb-640ddffd016d"
-    RANDOM_ID: "$(date +%s)"
 
 phases:
   install:
@@ -17,18 +16,7 @@ phases:
       - echo Build started on `date`
   build:
     commands:
-      - |
-        # Delete any stuck stacks first
-        aws cloudformation delete-stack --stack-name backend-clean-final-prod --region ap-southeast-1 2>/dev/null || true
-        aws cloudformation delete-stack --stack-name backend-api-clean-prod --region ap-southeast-1 2>/dev/null || true
-        aws cloudformation delete-stack --stack-name api-backend-2025-v2-prod --region ap-southeast-1 2>/dev/null || true
-        
-        # Generate unique service name
-        export RANDOM_ID=$(date +%s)
-        echo "Using service name: api-$RANDOM_ID"
-        
-        # Deploy with unique name
-        serverless deploy --stage prod --region ap-southeast-1
+      - serverless deploy --stage dev --region ap-southeast-1
   post_build:
     commands:
       - echo Build completed on `date`

@@ -1,4 +1,4 @@
-service: my-secure-service-v2
+service: backend-clean-api
 
 plugins: []
 

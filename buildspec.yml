@@ -16,8 +16,17 @@ phases:
       - echo Build started on `date`
   build:
     commands:
-      - rm -rf .serverless
-      - serverless deploy --stage dev --region ap-southeast-1
+      - |
+        # Delete existing stack completely
+        aws cloudformation delete-stack --stack-name backend-api-dev --region ap-southeast-1 || true
+        echo "Waiting for stack deletion..."
+        aws cloudformation wait stack-delete-complete --stack-name backend-api-dev --region ap-southeast-1 || true
+        
+        # Clean up local state
+        rm -rf .serverless
+        
+        # Deploy fresh
+        serverless deploy --stage dev --region ap-southeast-1
   post_build:
     commands:
       - echo Build completed on `date`

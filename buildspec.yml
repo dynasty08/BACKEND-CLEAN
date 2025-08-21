@@ -16,7 +16,7 @@ phases:
       - echo Build started on `date`
   build:
     commands:
-      - serverless deploy --stage pipeline --region ap-southeast-1
+      - serverless deploy --stage dev --region ap-southeast-1
   post_build:
     commands:
       - echo Build completed on `date`

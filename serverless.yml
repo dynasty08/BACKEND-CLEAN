@@ -1,4 +1,4 @@
-service: backend-clean-final
+service: api-${env:RANDOM_ID, 'default'}
 
 plugins: []
 

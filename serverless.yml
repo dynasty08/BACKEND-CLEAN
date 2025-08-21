@@ -1,5 +1,7 @@
 service: my-secure-service
 
+plugins: []
+
 provider:
   name: aws
   runtime: nodejs18.x
@@ -186,8 +188,7 @@ functions:
           method: get
           cors: true
 
-plugins:
-  - serverless-offline
+
 
 resources:
   Resources:

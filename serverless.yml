@@ -1,4 +1,4 @@
-service: backend-clean-api
+service: serverless-backend-v3
 
 plugins: []
 

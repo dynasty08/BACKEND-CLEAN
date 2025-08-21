@@ -23,6 +23,12 @@ phases:
           echo "Cleanup completed."
         fi
         
+        if [ "$STACK_STATUS" = "DELETE_IN_PROGRESS" ]; then
+          echo "Stack is being deleted. Waiting for deletion to complete..."
+          aws cloudformation wait stack-delete-complete --stack-name api-backend-2025-v2-prod --region ap-southeast-1
+          echo "Stack deletion completed."
+        fi
+        
         if [ "$STACK_STATUS" = "UPDATE_ROLLBACK_COMPLETE" ] || [ "$STACK_STATUS" = "CREATE_FAILED" ] || [ "$STACK_STATUS" = "ROLLBACK_COMPLETE" ]; then
           echo "Stack is in failed state ($STACK_STATUS). Deleting stack..."
           aws cloudformation delete-stack --stack-name api-backend-2025-v2-prod --region ap-southeast-1

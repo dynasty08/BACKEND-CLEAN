@@ -1,4 +1,7 @@
-service: backend-api-clean
+service: backend-clean-${self:custom.timestamp}
+
+custom:
+  timestamp: ${opt:timestamp, '20250821'}
 
 plugins: []
 

@@ -1,5 +1,9 @@
 version: 0.2
 
+env:
+  variables:
+    DB_SECRET_ARN: "arn:aws:secretsmanager:ap-southeast-1:194416698840:secret:rds!db-498e9ad0-b353-492d-84bb-640ddffd016d"
+
 phases:
   install:
     runtime-versions:

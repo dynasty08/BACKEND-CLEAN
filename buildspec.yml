@@ -17,10 +17,8 @@ phases:
   build:
     commands:
       - |
-        # Delete existing stack completely
-        aws cloudformation delete-stack --stack-name backend-api-dev --region ap-southeast-1 || true
-        echo "Waiting for stack deletion..."
-        aws cloudformation wait stack-delete-complete --stack-name backend-api-dev --region ap-southeast-1 || true
+        # Remove service completely using serverless
+        serverless remove --stage dev --region ap-southeast-1 || true
         
         # Clean up local state
         rm -rf .serverless

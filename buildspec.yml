@@ -18,7 +18,7 @@ phases:
     commands:
       - |
         # Remove service completely using serverless
-        serverless remove --stage dev --region ap-southeast-1 || true
+         - serverless remove --stage dev --region ap-southeast-1 || echo "Remove failed or stack doesn't exist, continuing..."
         
         # Clean up local state
         rm -rf .serverless
